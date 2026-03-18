@@ -1,0 +1,8 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+cd infrastructure
+
+terraform fmt -check -recursive
+terraform validate
+tflint
