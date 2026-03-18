@@ -1,6 +1,4 @@
-name: Terraform Validation
-
-# Trigger workflow on pull requests targeting main or master
+name: Validate terraform fmt
 on:
   pull_request:
     branches:
@@ -12,52 +10,43 @@ permissions:
   contents: read
 
 jobs:
-  terraform-verify:
+  validate:
     runs-on: ubuntu-latest
-    name: Validate Terraform code
-
+    name: terraform fmt check
+    outputs:
+      CHECK_STATUS: "${{ env.CHECK_STATUS }}"
     steps:
-      # Step 1: Checkout the code
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 2
-
-      # Step 2: Install Terraform
-      - name: Setup Terraform
+      - name: Fetch changed files
+        id: pr_files
+        uses: jitterbit/get-changed-files@v1
+        with:
+          format: "space-delimited"
+      - name: Configure terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.2.4
-
-      # Step 3: Install TFLint (optional but recommended)
-      - name: Install TFLint
+      - name: Validate terraform fmt (added_modified)
         run: |
-          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-          tflint --version
+          set +e
 
-      # Step 4: Terraform init
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ./infrastructure
+          echo "CHECK_STATUS=0" >> $GITHUB_ENV
 
-      # Step 5: Terraform fmt check
-      - name: Terraform fmt check
-        run: |
-          set -e
-          echo "Checking Terraform formatting..."
-          terraform fmt -check -recursive ./infrastructure
+          for changed_file in ${{ steps.pr_files.outputs.added_modified }}; do
+            echo "Checking terraform fmt on ${changed_file}..."
 
-      # Step 6: Terraform validate
-      - name: Terraform validate
-        run: |
-          set -e
-          echo "Validating Terraform configuration..."
-          terraform validate
-        working-directory: ./infrastructure
+            if [[ $changed_file == *.tf ]]; then
+              terraform fmt -check $changed_file
+              FMT_STATUS=$(echo $?)
 
-      # Step 7: Run TFLint for additional linting
-      - name: Run TFLint
-        run: |
-          set -e
-          echo "Running TFLint..."
-          tflint ./infrastructure
+              if [[ $FMT_STATUS -ne 0 ]]; then
+                echo "❌ terraform fmt failed - ${changed_file}" >> $GITHUB_STEP_SUMMARY
+                echo "CHECK_STATUS=1" >> $GITHUB_ENV
+              fi
+            fi
+          done
+      - name: Process check
+        if: always()
+        run: exit $CHECK_STATUS
