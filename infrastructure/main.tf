@@ -11,6 +11,6 @@ terraform {
 
 
 resource "azurerm_resource_group" "example" {
-name = "a09-rg"
+name = "bad-format"
 location = "Canada Central"
 }
