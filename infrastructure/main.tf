@@ -11,6 +11,6 @@ terraform {
 
 
 resource "azurerm_resource_group" "example" {
-name="broken-rg"
-location="Canada Central"
+  name     = "fixed-rg"
+  location = "Canada Central"
 }
