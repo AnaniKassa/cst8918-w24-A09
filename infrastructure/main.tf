@@ -10,6 +10,6 @@ terraform {
 }
 
 resource "azurerm_resource_group" "example" {
-name="broken-rg"   # bad indentation
-location="Canada Central"
+  name     = "fixed-rg"
+  location = "Canada Central"
 }
