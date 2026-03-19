@@ -2,8 +2,8 @@
 ### Full name: Anani Thierry Kassa
 ### Student ID: 041140713
 
-## Steps to follow
-
+## Steps to decode the assignment
+```
 Local Repo
    |
    |  git checkout -b add-terraform-validate
@@ -52,3 +52,4 @@ GitHub PR (same branch updated)
    |
    v
 PR Status: ✅ PASSED (green)
+```
