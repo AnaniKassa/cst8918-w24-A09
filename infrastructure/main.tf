@@ -14,3 +14,5 @@ resource "azurerm_resource_group" "example" {
   name     = "a09-rg"
   location = "Canada Central"
 }
+
+# fixed terraform formatting
